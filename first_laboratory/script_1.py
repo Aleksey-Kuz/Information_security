@@ -6,6 +6,7 @@ input.txt in encrypted.txt and decryption in decrypted.txt
 
 # dependencies
 import json
+import copy
 
 
 def make_matrix(text_str: str, n: int = 5) -> list[list]:
@@ -16,7 +17,9 @@ def make_matrix(text_str: str, n: int = 5) -> list[list]:
     :return: the matrix for encoding/decoding
     """
     text_str = text_str.strip()
-    text_str += ' ' * (n - len(text_str) % n)
+    remains = (n - len(text_str) % n)
+    if remains != n:
+        text_str += ' ' * remains
 
     return [list(text_str[line*5:line*5+5]) for line in range(len(text_str)//n)]
 
@@ -58,12 +61,11 @@ def decoding(matrix: list[list], k1: list, k2: list) -> list[list]:
     :param k2: params for lines
     :return: the decoded matrix
     """
-    decoding_matrix = list()
+    decoding_matrix = copy.deepcopy(matrix)
 
-    for line in range(len(k2)):
-        decoding_matrix.append(list())
-        for column in range(len(k1)):
-            decoding_matrix[line].append(matrix[k2[line]-1][k1[column]-1])
+    for line in range(len(k1)):
+        for column in range(len(k2)):
+            decoding_matrix[k1[line]-1][k2[column]-1] = matrix[line][column]
 
     return decoding_matrix
 
@@ -89,10 +91,25 @@ enc_text = make_text(enc_matrix)
 print('---Encoding text---')
 print(enc_text)
 print('---Matrix encoding---')
-print(enc_matrix)
+for line in enc_matrix:
+    print(line)
 print('\n-------------------------\n')
 
-print('matrix decoding')
-print('decoding')
-m = encoding(make_matrix(enc_text), params['k1'], params['k2'])
-print(m)
+dec_matrix = decoding(make_matrix(enc_text), params['k1'], params['k2'])
+dec_text = make_text(dec_matrix)
+print('---Decoding---')
+print(dec_text)
+print('---Matrix decoding---')
+for line in dec_matrix:
+    print(line)
+print('\n-------------------------\n')
+
+if text.strip() == dec_text.strip():
+    print('Encoding and decoding completed successfully!')
+else:
+    print('Encoding and decoding failed!')
+
+with open('encrypted.txt', 'w') as enc_file:
+    enc_file.write(enc_text.strip())
+with open('decrypted.txt', 'w') as dec_file:
+    dec_file.write(dec_text.strip())
